@@ -1,10 +1,17 @@
 package org.hibernate.bugs;
 
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.PersistenceUnitUtil;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.metadata.ClassMetadata;
+import org.hibernate.persister.collection.AbstractCollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,6 +51,9 @@ public class JPAUnitTestCase {
 		
 		entityManager = entityManagerFactory.createEntityManager();
 		entityManager.clear();
+		
+		this.clearObjectCache(entityManager);
+		
 		entityManager.getTransaction().begin();
 		
 		PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
@@ -65,5 +75,15 @@ public class JPAUnitTestCase {
 		
 		entityManager.getTransaction().commit();
 		entityManager.close();
+	}
+	
+	private void clearObjectCache(EntityManager em){
+		Session s = (Session)em.getDelegate();
+		SessionFactory sf = s.getSessionFactory();
+		org.hibernate.Cache cache = sf.getCache();
+
+		if (cache != null) {
+		    cache.evictAllRegions(); 
+		}
 	}
 }

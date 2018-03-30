@@ -3,8 +3,10 @@ package org.hibernate.bugs;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.PersistenceUnitUtil;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,7 +33,36 @@ public class JPAUnitTestCase {
 	public void hhh123Test() throws Exception {
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
-		// Do stuff...
+		
+		Image image = new Image();
+	    image.setId(1L);
+	    image.setContent(new byte[] {1, 2, 3});
+	    entityManager.persist(image);
+	    
+		entityManager.getTransaction().commit();
+		entityManager.close();
+		
+		entityManager = entityManagerFactory.createEntityManager();
+		entityManager.clear();
+		entityManager.getTransaction().begin();
+		
+		PersistenceUnitUtil unitUtil = entityManager.getEntityManagerFactory().getPersistenceUnitUtil();
+		Image image2 = entityManager.find(Image.class, 1L);
+		Assert.assertFalse(unitUtil.isLoaded(image2, "content"));
+		Assert.assertEquals(1L, image2.getId().longValue());
+		
+		entityManager.getTransaction().commit();
+		entityManager.close();
+		
+		entityManager = entityManagerFactory.createEntityManager();
+		entityManager.clear();
+		entityManager.getTransaction().begin();
+		
+		Image image3 = entityManager.find(Image.class, 1L);
+		Assert.assertFalse(unitUtil.isLoaded(image3, "content"));
+		Assert.assertArrayEquals(new byte[] {1, 2, 3}, image3.getContent());
+		Assert.assertTrue(unitUtil.isLoaded(image3, "content"));
+		
 		entityManager.getTransaction().commit();
 		entityManager.close();
 	}

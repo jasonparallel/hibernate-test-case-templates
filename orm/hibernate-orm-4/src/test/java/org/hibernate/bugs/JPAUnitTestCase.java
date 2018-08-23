@@ -35,7 +35,7 @@ public class JPAUnitTestCase {
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
 		
-		Image image = new Image();
+		final Image image = new Image();
 	    image.setId(1L);
 	    image.setContent(new byte[] {1, 2, 3});
 	    entityManager.persist(image);
@@ -47,26 +47,18 @@ public class JPAUnitTestCase {
 		entityManager.clear();
 		entityManager.getTransaction().begin();
 		
-		//connectionProvider.clear();
-		Image image2 = entityManager.find(Image.class, 1L);
-		PersistenceUnitUtil.
-					Assert.assertEquals(1L, image2.getId().longValue());
+		final Image image2 = entityManager.find(Image.class, 1L);
+		Assert.assertArrayEquals(new byte[] {1, 2, 3}, image2.getContent());
+		image2.setContent(new byte[] {1, 2, 3, 4});
+					
 		entityManager.getTransaction().commit();
 		entityManager.close();
 		
 		entityManager = entityManagerFactory.createEntityManager();
 		entityManager.getTransaction().begin();
 		
-		//connectionProvider.clear();
 		Image image3 = entityManager.find(Image.class, 1L);
-	//	+			List<PreparedStatement> preparedStatements = connectionProvider.getPreparedStatements();
-		//+			assertEquals( 1, preparedStatements.size() );
-		//+			assertNotNull( connectionProvider.getPreparedStatement( "select image0_.id as id1_0_0_ from Image image0_ where image0_.id=?" ) );
-					Assert.assertArrayEquals(new byte[] {1, 2, 3}, image3.getContent());
-		//+			preparedStatements = connectionProvider.getPreparedStatements();
-		//+			assertEquals( 2, preparedStatements.size() );
-	//	+			assertNotNull( connectionProvider.getPreparedStatement( "select image_.content as content2_0_ from Image image_ where image_.id=?" ) );
-		//+		});
+		Assert.assertArrayEquals(new byte[] {1, 2, 3, 4}, image3.getContent());
 		entityManager.getTransaction().commit();
 		entityManager.close();
 	}
